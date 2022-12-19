@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Final Project - Chart 1</title>
+		<script type="text/javascript" src="../d3.js"></script>
+		<style type="text/css">
+
+		</style>
+	</head>
+	<body>
+
+		<div id="stackedChart"></div>
+		<script type="text/javascript">
+
+
+
+
+
+				 d3.csv("2017-2018_Physical_Education_-_PE_Space_20221110.csv")
+							.then(function(data) {
+
+								//NEW this is the function below with the formated data
+							var stackedData =	makeDataStack(data)
+								//TODO you can write the stacked chart code in the new empty function using the formatted data
+								makeStackedChart(stackedData)
+
+									dataset = data
+
+						 } )
+
+
+
+						 //NEW function that joins entries and adds up areas
+						 function makeDataStack(dataset){
+							 var formatted = {}
+
+							 for(var i in dataset){
+								 //make a variable to each row of data
+							 	var space = dataset[i]
+								 //is this the school id? if not change to different key
+								 var schoolId = space["ATS Code"]
+								 //if the id is not in the formatted dictionary, make an entry with area set to 0 for each inside and outside
+								 if(Object.keys(formatted).indexOf(schoolId)==-1){
+									 formatted[schoolId]={}
+									 formatted[schoolId]["inside"] = 0
+									 formatted[schoolId]["outside"] = 0
+
+								 }
+								 //then add the new area to it depending on if it is inside or outside
+								 //use a if statement to determin whether it is outside or in
+								 //this code works if there are only insdie or outsdie options.
+								 if(space["Insidevoutside"]=="Inside"){
+								 	formatted[schoolId]["inside"]+=parseInt(space["sqft"])
+								 }else if(space["Insidevoutside"]=="Outside"){
+								 	formatted[schoolId]["outside"]+=parseInt(space["sqft"])
+								 }
+							 }
+							 //here is the formatted output of the function
+							//console.log(formatted)
+
+							 var formattedArray = []
+							 for(var f in formatted){
+							 	console.log(f)
+								 formattedArray.push( formatted[f])
+							 }
+							 return formattedArray
+
+						 }
+
+						 function makeStackedChart(stackedData){
+							 console.log(stackedData)
+							//TODO draw your chart here------------------
+
+							//Width and height
+							var w = 500;
+							var h = 300;
+
+
+							//Set up stack method
+							var stack = d3.stack()
+											.keys([ "inside", "outside" ])
+										//	.order(d3.stackOrderDescending);  // <-- Flipped stacking order
+
+							//Data, stacked
+							var series = stack(stackedData);
+											console.log(series)
+
+							//Set up scales
+							var xScale = d3.scaleBand()
+								.domain(d3.range(stackedData.length))
+								.range([0, w])
+								.paddingInner(0.05);
+
+							var yScale = d3.scaleLinear()
+								.domain([0,
+									d3.max(stackedData, function(d) {
+										return d.inside + d.outside ;
+									})
+								])
+								.range([h, 0]);  // <-- Flipped vertical scale
+
+							//Easy colors accessible via a 10-step ordinal scale
+							var colors = d3.scaleOrdinal(d3.schemeCategory10);
+
+							//Create SVG element
+							var svg = d3.select("body")
+										.append("svg")
+										.attr("width", w)
+										.attr("height", h);
+
+							// Add a group for each row of data
+							var groups = svg.selectAll("g")
+								.data(series)
+								.enter()
+								.append("g")
+								.style("fill", function(d, i) {
+									return colors(i);
+								});
+
+							// Add a rect for each data value
+							var rects = groups.selectAll("rect")
+								.data(function(d) { return d; })
+								.enter()
+								.append("rect")
+								.attr("x", function(d, i) {
+									return xScale(i);
+								})
+								.attr("y", function(d) {
+									return yScale(d[1]);  // <-- Changed y value
+								})
+								.attr("height", function(d) {
+									return yScale(d[0]) - yScale(d[1]);  // <-- Changed height value
+								})
+								.attr("width", xScale.bandwidth());
+
+							// --------------------
+
+						 }
+
+
+  </script>
+</body>
+</html>

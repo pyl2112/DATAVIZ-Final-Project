@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Final Project - Chart 1</title>
+		<script type="text/javascript" src="../d3.js"></script>
+		<style type="text/css">
+
+		</style>
+	</head>
+	<body>
+
+		<div id="stackedChart"></div>
+		<script type="text/javascript">
+
+		var w = 5000;
+		var h = 4000;
+		var barPadding = 1;
+
+		//Create SVG element
+		var svg = d3.select("body")
+					.append("svg")
+					.attr("width", w)
+					.attr("height", h);
+
+				 d3.csv("2017-2018_Physical_Education_-_PE_Space_20221110.csv")
+							.then(function(data) {
+
+								//NEW this is the function below with the formated data
+							var stackedData =	makeDataStack(data)
+								//TODO you can write the stacked chart code in the new empty function using the formatted data
+								makeStackedChart(stackedData)
+
+									dataset = data
+									 svg.selectAll("rect")
+							 .data(data)
+							 .enter()
+							 .append("rect")
+							 .attr("x", function(d, i) {
+									return i * (w / data.length);
+							 })
+							 .attr("y", function(d) {
+									return h - (d.sqft / 100);
+							 })
+							 .attr("width", w / data.length - barPadding)
+							 .attr("height", function(d) {
+									return d.sqft / 100;
+							 })
+							 .attr("fill", "red");
+
+							 svg.selectAll("text")
+							 .data(data)
+							 .enter()
+							 .append("text")
+							 .text(function(d) {
+							   					return d.sqft
+							   				})
+							 .attr("x", function(d, i) {
+							 	 return i * (w / data.length);
+							 })
+							 .attr("y", function(d) {
+							 	 return h - (d.sqft / 100);
+							 })
+							 .attr("fill", "black");
+						 } )
+
+
+
+						 //NEW function that joins entries and adds up areas
+						 function makeDataStack(dataset){
+							 var formatted = {}
+
+							 for(var i in dataset){
+								 //make a variable to each row of data
+							 	var space = dataset[i]
+								 //is this the school id? if not change to different key
+								 var schoolId = space["ATS Code"]
+								 //if the id is not in the formatted dictionary, make an entry with area set to 0 for each inside and outside
+								 if(Object.keys(formatted).indexOf(schoolId)==-1){
+									 formatted[schoolId]={}
+									 formatted[schoolId]["inside"] = 0
+									 formatted[schoolId]["outside"] = 0
+
+								 }
+								 //then add the new area to it depending on if it is inside or outside
+								 //use a if statement to determin whether it is outside or in
+								 //this code works if there are only insdie or outsdie options.
+								 if(space["Insidevoutside"]=="Inside"){
+								 	formatted[schoolId]["inside"]+=parseInt(space["sqft"])
+								 }else if(space["Insidevoutside"]=="Outside"){
+								 	formatted[schoolId]["outside"]+=parseInt(space["sqft"])
+								 }
+							 }
+							 //here is the formatted output of the function
+							console.log(formatted)
+							 return formatted
+
+						 }
+
+						 function makeStackedChart(stackedData){
+
+							//TODO draw your chart here
+
+						 }
+
+
+  </script>
+</body>
+</html>

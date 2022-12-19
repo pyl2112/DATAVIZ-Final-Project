@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>20221110 BAR TEST</title>
+		<script type="text/javascript" src="../d3.js"></script>
+		<style type="text/css">
+
+		</style>
+	</head>
+	<body>
+		<script type="text/javascript">
+
+		var w = 3000;
+		var h = 600;
+		var barPadding = 1;
+
+		//Create SVG element
+		var svg = d3.select("body")
+					.append("svg")
+					.attr("width", w)
+					.attr("height", h);
+
+				 d3.csv("2017-2018_Physical_Education_-_PE_Space_20221110.csv")
+							.then(function(data) {
+									// dataset = data
+
+							 svg.selectAll("rect")
+							 .data(data)
+							 .enter()
+							 .append("rect")
+							 .attr("x", function(d, i) {
+									return i * (w / data.length);
+							 })
+							 .attr("y", function(d) {
+									return h - (d.sqft / 100);
+							 })
+							 .attr("width", w / data.length - barPadding)
+							 .attr("height", function(d) {
+									return d.sqft / 100;
+							 })
+							 .attr("fill", "teal");
+
+							 // text sq
+							 svg.selectAll("text")
+							 .data(data)
+							 .enter()
+							 .append("text")
+							 .text(function(d) {
+							   					return d.sqft
+							   				})
+							 .attr("x", function(d, i) {
+							 	 return i * (w / data.length);
+							 })
+							 .attr("y", function(d) {
+							 	 return h - (d.sqft / 100);
+							 })
+							 .attr("fill", "black");
+
+
+							 // text LocationName
+
+							 svg.selectAll("text")
+							 .data(data)
+							 .enter()
+							 .append("text")
+							 .text(function(d) {
+													return d.LocationName
+												})
+							 .attr("x", function(d, i) {
+								 return i * (w / data.length);
+							 })
+							 .attr("y", function(d) {
+								 return h ;
+							 })
+							 .attr("fill", "black");
+
+
+
+
+
+
+
+
+						 } )
+
+  </script>
+</body>
+</html>
