@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <meta charset="utf-8">
+  <title>PE Spaces in Manhattan</title>
+        <!--demonstration of using the svg 'use' element to create a pictogram-->
+		<script src="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js"></script>
+		<link href="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css" rel="stylesheet" />
+    <title>Manhattan Public School</title>
+    <script type="text/javascript" src="https://d3js.org/d3.v4.js"></script>
+        <style type="text/css">
+
+
+  			#title{
+  				text-align: center;
+  				font-family: Helvetica;
+  			}
+
+        #center {
+  margin: auto;
+  width: 41%;
+  border:0;
+  padding: 0px;
+}
+
+        .bigtext{
+          font-size:36px;
+          color:black;
+          text-align: center;
+          font-family: sans-serif;
+        }
+
+        .subtext{
+          font-size:24px;
+          color:black;
+          text-align: center;
+          font-family: sans-serif;
+        }
+  			.mainText{
+  				font-size:16px;
+  				color:black;
+  				text-align: justify;
+          text-justify: inter-word;
+  				font-family: sans-serif;
+          width: 680px;
+        }
+          .smallText{
+            font-size:9px;
+            color:black;
+            text-align: justify;
+            text-justify: inter-word;
+            font-family: sans-serif;
+            width: 100px;
+            top: 8000px;
+            float: right;
+}
+          .centerimg{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+  top: 0px;
+}
+        #map {
+            height: 90vh;
+            width:30vw;
+            margin:10px;
+            margin-left: auto;
+            margin-right: auto;
+          }
+          #credit {
+    float:right;
+    margin: auto;
+    width: 41%;
+    border:0;
+    padding: 0px;
+  }
+
+        hr.solid {
+          border-top: 1px solid #bbb;
+        }
+          </style>
+
+
+
+
+  	</head>
+
+  	<body>
+  		<body style="background-color:#fbf6e9;">
+
+        <div id="text0" class="bigtext"><b>PE Spaces in Manhattan Public School</b>
+    		</div>
+
+<hr class="solid">
+
+  		<div id="center" class="mainText">
+        <br></br>
+      	<p>Play is an integral part of learning in early education consequently, parks and playgrounds are important spaces to encourage children to play in school.  We have observed that there is a lack of open spaces, parks, or playgrounds for children to play in some public schools in NYC, thus we would like to understand how many schools in NYC lack the integral basic learning facility of playgrounds and parks.  The visualization aims to understand the availability of playgrounds and parks to public schools in New York City.  It will be presented in a bar chart showing the ratio of student to open spaces in each school.  It hopes to identify schools that lack playgrounds, parks, or open spaces.  The data can then be used as reference for concerned stakeholders to hopefully fund these schools to provide open spaces for children to learn through the process of play.
+  		</p>
+
+      <br></br>
+      <hr class="solid">
+      <br></br>
+
+
+      <p>The map below shows the separated PE space area (sqft) per student in Manhattan. It identifies the availability of indoor and outdoor PE spaces of each school to their students. On the map, we see that the schools that lack PE spaces don't exist only in a particular area, but everywhere in Manhattan.
+      </p>
+
+
+  		</div>
+
+<script type="text/javascript">
+
+          //make a variable to each row of data
+         d3.csv("2017-2018_Physical_Education_-_PE_Space_20221110.csv")
+              .then(function(data) {
+
+                //NEW this is the function below with the formated data
+              var stackedData =	makeDataStack(data)
+                //TODO you can write the stacked chart code in the new empty function using the formatted data
+                makeStackedChart(stackedData)
+
+                  dataset = data
+             } )
+
+
+             //NEW function that joins entries and adds up areas
+             function makeDataStack(dataset){
+               var formatted = {}
+
+               for(var i in dataset){
+                 //make a variable to each row of data
+                var space = dataset[i]
+                 //is this the school id? if not change to different key
+                 var schoolId = space["ATS Code"]
+                 //if the id is not in the formatted dictionary, make an entry with area set to 0 for each inside and outside
+                 if(Object.keys(formatted).indexOf(schoolId)==-1){
+                   formatted[schoolId]={}
+                   formatted[schoolId]["inside"] = 0
+                   formatted[schoolId]["outside"] = 0
+
+                 }
+                 //then add the new area to it depending on if it is inside or outside
+                 //use a if statement to determin whether it is outside or in
+                 //this code works if there are only insdie or outsdie options.
+                 if(space["Insidevoutside"]=="Inside"){
+                  formatted[schoolId]["inside"]+=parseInt(space["sqft"])
+                 }else if(space["Insidevoutside"]=="Outside"){
+                  formatted[schoolId]["outside"]+=parseInt(space["sqft"])
+                 }
+               }
+               //here is the formatted output of the function
+              //console.log(formatted)
+
+               var formattedArray = []
+               for(var f in formatted){
+               //	console.log(f)
+                 formattedArray.push( formatted[f])
+               }
+               return formattedArray
+
+             }
+
+             function makeStackedChart(stackedData){
+               console.log(stackedData)
+              //TODO draw your chart here-------------------------------------------------------------
+
+
+
+              //Create SVG element---------------------------------------------------------
+
+              // set the dimensions and margins of the graph
+              var margin = {top: 1, right: 30, bottom: 30, left: 60},
+                  w = 1500 - margin.left - margin.right,
+                  h = 600 - margin.top - margin.bottom;
+
+              // append the svg object to the body of the page
+              var svg = d3.select("body")
+                .append("svg")
+                  .attr("width", w + margin.left + margin.right)
+                  .attr("height", h + margin.top + margin.bottom)
+                .append("g")
+                  .attr("transform",
+                        "translate(" + margin.left + "," + margin.top + ")");
+
+              //Set up stack method---------------------------------------------------
+              var stack = d3.stack()
+                      .keys([ "inside", "outside" ])
+                    //	.order(d3.stackOrderDescending);  // <-- Flipped stacking order
+
+              //Data, stacked
+              var series = stack(stackedData);
+                      console.log(series)
+
+
+              //Set up scales----------------------------------------------
+
+              // X axis
+              var xScale = d3.scaleBand()
+                .domain(d3.range(stackedData.length))
+                .range([ 0, w ])
+                .padding(0.2);
+              svg.append("g")
+                .attr("transform", "translate(0," + h + ")")
+                .call(d3.axisBottom(xScale))
+                .selectAll("text")
+                  .attr("transform", "translate(-10,0)rotate(-45)")
+                  .style("text-anchor", "end");
+
+              // Y axis
+              var yScale = d3.scaleLinear()
+                .domain([0, d3.max(stackedData, function(d) {
+                  return d.inside + d.outside ;
+                })
+              ])
+                .range([ h, 0]); // <-- Flipped vertical scale
+              svg.append("g")
+                .call(d3.axisLeft(yScale));
+
+
+
+
+                //Easy colors accessible via a 10-step ordinal scale
+                //var colors = d3.scaleOrdinal(d3.schemeCategory10);
+                // var colors = d3.scaleOrdinal(d3.schemeCategory10[5]);
+                //var storedColor1 = $('#one').css('color');
+                //var storedColor2 = $('#two').css('color');
+                const colorList = [d3.schemeCategory10[7],d3.schemeCategory10[8]];
+                var colors = d3.scaleOrdinal(colorList);
+
+
+              // Add a group for each row of data
+              //NEW 11/30/2022 this is the only change - here I changed selectAll g to rect because you added more groups with g above, so now the select doesn't work.
+              var groups = svg.selectAll("rect")
+                .data(series)
+                .enter()
+                .append("g")
+                .style("fill", function(d, i) {
+                  return colors(i);
+                });
+
+              // Add a rect for each data value
+              var rects = groups.selectAll("rect")
+                .data(function(d) { return d; })
+                .enter()
+                .append("rect")
+                .attr("x", function(d, i) {
+                  console.log(d)
+                  return xScale(i);
+                })
+                .attr("y", function(d) {
+                  return yScale(d[1]);  // <-- Changed y value
+                })
+                .attr("height", function(d) {
+                  return yScale(d[0]) - yScale(d[1]);  // <-- Changed height value
+                })
+                .attr("width", xScale.bandwidth());
+
+
+             }
+
+  </script>
+
+
+  <br></br>
+
+  <div id="map" class="centerimg">Map</div>
+  <script src="map3.js"></script>
+
+  <div id="center" class="mainText"
+
+  <br></br>
+  <br></br>
+  <hr class="solid">
+  <br></br>
+
+
+  <p>These are the schools with only indoor PE spaces. Most of them rely on indoor multipurpose rooms or gymnasiums for PE classes.
+  </p>
+  <br></br>
+
+  </div>
+
+  <div id="center" class="centerimg">
+  <p>
+  <img src="01_school_detail\indoor.jpg" width=90% height=auto >
+  </p>
+  </div>
+
+
+
+  <div id="center" class="centerimg">
+  <p>
+  <img src="01_school_detail\ps150.png" width="45%" height=auto>
+  <img src="01_school_detail\ps132.png" width="45%" height=auto>
+  <img src="01_school_detail\is176.png" width="45%" height=auto>
+  <img src="01_school_detail\ps004.png" width="45%" height=auto>
+  <img src="01_school_detail\ps155.png" width="45%" height=auto>
+  </p>
+
+  <br></br>
+  <br></br>
+  <hr class="solid">
+  <br></br>
+  </div>
+
+
+
+
+
+  <div id="center" class="mainText"
+        <p>These are the schools with only outdoor PE spaces. They can only
+ use outdoor yards for PE classes, even during winter.
+</p>
+</div>
+
+
+<br></br>
+
+<div id="center" class="centerimg">
+  <p>
+  <img src="01_school_detail\outdoor.jpg" width=90% height=auto >
+  </p>
+</div>
+
+<div id="center" class="centerimg">
+  <p>
+  <img src="01_school_detail\ps318.png" width="45%" height=auto>
+  <img src="01_school_detail\ps61.png" width="45%" height=auto>
+  </p>
+
+</div>
+
+<br></br>
+<br></br>
+<hr class="solid">
+<br></br>
+
+
+
+
+
+
+
+  <div id="center" class="mainText"
+  <p>This bar chart shows the total floor area of indoor and outdoor PE spaces.
+    <br></br>
+    <br></br>
+
+  </p>
+  </div>
+
+
+</body>
+</html>
